@@ -68,7 +68,7 @@
       if (
         head.x < 0 || head.x >= tileCount ||
         head.y < 0 || head.y >= tileCount ||
-        snake.slice(1).some(segment => segment.x === head.x && segment.y === head.y)
+        snake.slice(20).some(segment => segment.x === head.x && segment.y === head.y)
       ) {
         alert("Game Over! Final Score: " + score);
         snake = [{ x: 10, y: 10 }];
@@ -92,7 +92,7 @@
       }
     });
 
-    // Mobile swipe support
+    
     let touchStartX = 0;
     let touchStartY = 0;
 
