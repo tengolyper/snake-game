@@ -25,15 +25,51 @@
       font-size: 1.2em;
       margin-bottom: 10px;
     }
+    #pause-btn {
+      font-size: 1em;
+      background: #222;
+      color: #0f0;
+      border: 2px solid #0f0;
+      border-radius: 4px;
+      padding: 6px 18px;
+      cursor: pointer;
+      margin-bottom: 12px;
+      margin-top: 4px;
+      transition: background 0.2s;
+    }
+    #pause-btn.paused {
+      background: #0f0;
+      color: #222;
+      border-color: #222;
+    }
+    #paused-overlay {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(17,17,17,0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #0f0;
+      font-size: 2em;
+      pointer-events: none;
+      z-index: 10;
+    }
   </style>
 </head>
 <body>
   <div id="score">Score: 0</div>
+  <button id="pause-btn" type="button">Pause</button>
   <canvas id="game" width="400" height="400"></canvas>
+  <div id="paused-overlay" style="display: none;">Paused</div>
   <script>
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
     const scoreDisplay = document.getElementById('score');
+    const pauseBtn = document.getElementById('pause-btn');
+    const pausedOverlay = document.getElementById('paused-overlay');
 
     const gridSize = 20;
     const tileCount = canvas.width / gridSize;
@@ -43,12 +79,17 @@
     let food = { x: 5, y: 5 };
     let score = 0;
 
+    let paused = false;
+    let intervalId = null;
+
     function drawTile(x, y, color) {
       ctx.fillStyle = color;
       ctx.fillRect(x * gridSize, y * gridSize, gridSize - 2, gridSize - 2);
     }
 
     function drawGame() {
+      if (paused) return;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       let head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
@@ -72,7 +113,6 @@
         snake.pop();
       }
 
-      
       if (
         snake.slice(20).some(segment => segment.x === head.x && segment.y === head.y)
       ) {
@@ -89,12 +129,31 @@
       });
     }
 
+    function togglePause() {
+      paused = !paused;
+      if (paused) {
+        pausedOverlay.style.display = 'flex';
+        pauseBtn.classList.add('paused');
+        pauseBtn.textContent = 'Resume';
+      } else {
+        pausedOverlay.style.display = 'none';
+        pauseBtn.classList.remove('paused');
+        pauseBtn.textContent = 'Pause (Press E)';
+      }
+    }
+
+    pauseBtn.addEventListener('click', togglePause);
+
     document.addEventListener('keydown', e => {
       switch (e.key) {
         case 'ArrowUp': if (direction.y === 0) direction = { x: 0, y: -1 }; break;
         case 'ArrowDown': if (direction.y === 0) direction = { x: 0, y: 1 }; break;
         case 'ArrowLeft': if (direction.x === 0) direction = { x: -1, y: 0 }; break;
         case 'ArrowRight': if (direction.x === 0) direction = { x: 1, y: 0 }; break;
+        case 'e':
+        case 'E':
+          togglePause();
+          break;
       }
     });
 
@@ -121,8 +180,8 @@
       }
     });
 
-    // Change interval from 100ms to 130ms to slow down the snake
-    setInterval(drawGame, 130);
+    // Use setInterval and store the id for possible future use
+    intervalId = setInterval(drawGame, 130);
   </script>
 </body>
 </html>
